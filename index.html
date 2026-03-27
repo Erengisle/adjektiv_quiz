@@ -5,163 +5,101 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
             text-align: center;
-            background-color: #f5f5f5;
-        }
-        .question-box {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .options {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
+            margin: 50px;
         }
         button {
-            padding: 12px 20px;
+            padding: 10px 20px;
             font-size: 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            margin: 10px;
             cursor: pointer;
-            transition: background 0.3s;
         }
-        button:hover {
-            background: #45a049;
-        }
-        #result {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 20px 0;
-            min-height: 30px;
-            color: #2E7D32;
+        #question {
+            font-size: 20px;
+            margin: 20px;
         }
         #score {
-            font-size: 20px;
-            color: #2E7D32;
-            margin: 10px 0;
-        }
-        .follow-up {
-            background: #e8f5e9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            display: none;
-        }
-        #next-btn {
-            background: #2196F3;
-            margin-top: 10px;
-        }
-        #next-btn:hover {
-            background: #0b7dda;
-        }
-        #start-btn {
-            background: #FF9800;
             font-size: 18px;
-            padding: 15px 30px;
-        }
-        #start-btn:hover {
-            background: #e68a00;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <h1>Adjektivquiz</h1>
     <div id="score">Poäng: 0</div>
-    <div class="question-box">
-        <div id="question">Klicka på knappen nedan för att starta quizen!</div>
-        <div class="options" id="options">
-            <button id="start-btn" onclick="startQuiz()">Starta quiz</button>
-        </div>
-        <div id="result"></div>
-        <div class="follow-up" id="follow-up"></div>
-        <button id="next-btn" onclick="nextQuestion()" style="display: none;">Nästa fråga</button>
+    <div id="question">Klicka på "Starta quiz" för att börja!</div>
+    <div id="options">
+        <button onclick="startQuiz()">Starta quiz</button>
     </div>
 
     <script>
-        // Rensad lista med adjektiv
-        const adjektiv = [
-            "allvarlig", "arg", "arbetslös", "aktuell", "avundsjuk", "belåten", "blank", "bra", "bred", "brun",
-            "bussig", "definitiv", "dov", "duktig", "dum", "ekonomisk", "enorm", "ensam", "falskt", "fast",
-            "farlig", "färdig", "färsk", "fin", "flott", "fri", "ful", "full", "galen", "gemensam", "god",
-            "grå", "gräslig", "grov", "gul", "hård", "halv", "het", "hög", "hemsk", "hoppfull", "intressant",
-            "jämn", "jättetuff", "kall", "kvinlig", "klar", "kort", "liten", "lång", "ledig", "ledsen",
-            "lätt", "liberal", "ljus", "lönsam", "lös", "lugn", "lycklig", "mjukt", "modern", "mogen",
-            "mörk", "måttlig", "naturvetenskaplig", "nöjd", "nödvändig", "ny", "personlig", "pigg",
-            "positiv", "politisk", "randig", "rädd", "rik", "riktig", "rymlig", "röd", "rutig", "säker",
-            "sen", "skön", "smal", "smutsig", "snäll", "snål", "snygg", "spärrat", "stark", "stor",
-            "sönder", "särskild", "söt", "svart", "svensk", "svår", "tjock", "tom", "trevlig", "treårig",
-            "trött", "tråkig", "tuff", "tunn", "underbar", "underlig", "usel", "utförlig", "vacker",
-            "vaken", "villig", "vit", "värdefull", "varm"
-        ];
-
-        // Substantiv med genus (en/ett)
+        const adjektiv = ["stor", "liten", "gammal", "ny", "vacker", "ful", "svår", "lätt", "glad", "ledsen"];
         const substantiv = [
-            { ord: "bok", genus: "en" }, { ord: "bil", genus: "en" }, { ord: "flicka", genus: "en" },
-            { ord: "skola", genus: "en" }, { ord: "vägg", genus: "en" }, { ord: "dörr", genus: "en" },
-            { ord: "hus", genus: "ett" }, { ord: "bord", genus: "ett" }, { ord: "äpple", genus: "ett" },
-            { ord: "fönster", genus: "ett" }, { ord: "rum", genus: "ett" }
+            { ord: "bok", genus: "en" },
+            { ord: "hus", genus: "ett" },
+            { ord: "bil", genus: "en" }
         ];
 
-        // Fras-mallar för grupperna A, B, C
-        const fraser = {
-            A: ["en {adj} {subst}", "ett {adj} {subst}"],
-            B: ["den {adj}a {subst}en", "det {adj}a {subst}et", "de {adj}a {subst}erna"],
-            C: ["min {adj}a {subst}", "din {adj}a {subst}", "vår {adj}a {subst}"]
-        };
-
-        // Global variabler
         let currentQuestion = 0;
         let score = 0;
         let questions = [];
-        let usedAdjektiv = new Set();
-        let currentFollowUp = null;
 
-        // Starta quizen
         function startQuiz() {
-            document.getElementById("start-btn").style.display = "none";
-            document.getElementById("score").textContent = "Poäng: 0";
-            score = 0;
+            document.getElementById("options").innerHTML = "";
             genereraFragor();
             visaFraga();
         }
 
-        // Generera 20 unika frågor
         function genereraFragor() {
             questions = [];
-            usedAdjektiv.clear();
-            const adjCopy = [...adjektiv].sort(() => 0.5 - Math.random()); // Slumpa ordning
-
-            while (questions.length < 20 && adjCopy.length > 0) {
-                const adj = adjCopy.pop();
-                if (usedAdjektiv.has(adj)) continue;
-                usedAdjektiv.add(adj);
-
-                // Slumpa grupp (A, B eller C)
-                const grupp = ["A", "B", "C"][Math.floor(Math.random() * 3)];
-                // Slumpa substantiv
+            for (let i = 0; i < 5; i++) { // 5 frågor för enkelhetens skull
+                const adj = adjektiv[Math.floor(Math.random() * adjektiv.length)];
                 const subst = substantiv[Math.floor(Math.random() * substantiv.length)];
+                const grupp = Math.random() < 0.5 ? "A" : "B"; // Förenklat
 
-                // Skapa frasen
-                let frasMall;
-                let correctAnswer;
-                let followUp = null;
-
+                let questionText;
                 if (grupp === "A") {
-                    const artikel = subst.genus === "en" ? "en" : "ett";
-                    frasMall = fraser.A[subst.genus === "en" ? 0 : 1]
-                        .replace("{adj}", adj)
-                        .replace("{subst}", subst.ord);
-                    correctAnswer = "A";
-                } else if (grupp === "B") {
-                    const suffix = "a"; // Förenklad böjning
-                    const substForm = subst.genus === "
+                    questionText = `Vilken grupp tillhör adjektivet i "${subst.genus === "en" ? "en" : "ett"} ${adj} ${subst.ord}"?`;
+                } else {
+                    questionText = `Vilken grupp tillhör adjektivet i "den ${adj}a ${subst.ord}${subst.genus === "en" ? "n" : "t"}"?`;
+                }
+
+                questions.push({
+                    text: questionText,
+                    correct: grupp,
+                    adj: adj,
+                    subst: subst.ord
+                });
+            }
+        }
+
+        function visaFraga() {
+            if (currentQuestion >= questions.length) {
+                document.getElementById("question").textContent = `Quiz klar! Ditt resultat: ${score} av ${questions.length}`;
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById("question").textContent = q.text;
+            document.getElementById("options").innerHTML = `
+                <button onclick="checkAnswer('A')">A</button>
+                <button onclick="checkAnswer('B')">B</button>
+            `;
+        }
+
+        function checkAnswer(selected) {
+            const q = questions[currentQuestion];
+            if (selected === q.correct) {
+                score++;
+                document.getElementById("score").textContent = `Poäng: ${score}`;
+                document.getElementById("question").textContent += " ✅ Rätt!";
+            } else {
+                document.getElementById("question").textContent += ` ❌ Fel! Rätt svar var ${q.correct}.`;
+            }
+
+            currentQuestion++;
+            setTimeout(visaFraga, 1500);
+        }
+    </script>
+</body>
+</html>
