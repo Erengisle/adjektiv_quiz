@@ -64,13 +64,21 @@
         #next-btn:hover {
             background: #0b7dda;
         }
+        #start-btn {
+            background: #FF9800;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        #start-btn:hover {
+            background: #e68a00;
+        }
     </style>
 </head>
 <body>
     <h1>Adjektivquiz</h1>
     <div id="score">Poäng: 0</div>
     <div class="question-box">
-        <div id="question">Klicka på "Starta quiz" för att börja!</div>
+        <div id="question">Klicka på knappen nedan för att starta quizen!</div>
         <div class="options" id="options">
             <button id="start-btn" onclick="startQuiz()">Starta quiz</button>
         </div>
@@ -116,10 +124,13 @@
         let score = 0;
         let questions = [];
         let usedAdjektiv = new Set();
+        let currentFollowUp = null;
 
         // Starta quizen
         function startQuiz() {
             document.getElementById("start-btn").style.display = "none";
+            document.getElementById("score").textContent = "Poäng: 0";
+            score = 0;
             genereraFragor();
             visaFraga();
         }
@@ -153,13 +164,4 @@
                     correctAnswer = "A";
                 } else if (grupp === "B") {
                     const suffix = "a"; // Förenklad böjning
-                    const substForm = subst.genus === "en" ?
-                        subst.ord + "n" : // en bok → boken
-                        subst.ord + "t";   // ett hus → huset
-                    const frasIndex = subst.genus === "en" ? 0 : subst.genus === "ett" ? 1 : 2;
-                    frasMall = fraser.B[fraseIndex]
-                        .replace("{adj}", adj + suffix)
-                        .replace("{subst}", substForm.replace("et", "").replace("en", ""));
-                    correctAnswer = "B";
-                    followUp = {
-                        text: `Är "\${sub
+                    const substForm = subst.genus === "
