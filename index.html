@@ -43,6 +43,7 @@
             font-weight: bold;
             margin: 20px 0;
             min-height: 30px;
+            color: #2E7D32;
         }
         #score {
             font-size: 20px;
@@ -54,6 +55,14 @@
             padding: 15px;
             border-radius: 5px;
             margin-top: 15px;
+            display: none;
+        }
+        #next-btn {
+            background: #2196F3;
+            margin-top: 10px;
+        }
+        #next-btn:hover {
+            background: #0b7dda;
         }
     </style>
 </head>
@@ -61,14 +70,17 @@
     <h1>Adjektivquiz</h1>
     <div id="score">Poäng: 0</div>
     <div class="question-box">
-        <div id="question">Laddar frågor...</div>
-        <div class="options" id="options"></div>
+        <div id="question">Klicka på "Starta quiz" för att börja!</div>
+        <div class="options" id="options">
+            <button id="start-btn" onclick="startQuiz()">Starta quiz</button>
+        </div>
         <div id="result"></div>
-        <div class="follow-up" id="follow-up" style="display: none;"></div>
+        <div class="follow-up" id="follow-up"></div>
+        <button id="next-btn" onclick="nextQuestion()" style="display: none;">Nästa fråga</button>
     </div>
 
     <script>
-        // Rensad lista med adjektiv (160 unika)
+        // Rensad lista med adjektiv
         const adjektiv = [
             "allvarlig", "arg", "arbetslös", "aktuell", "avundsjuk", "belåten", "blank", "bra", "bred", "brun",
             "bussig", "definitiv", "dov", "duktig", "dum", "ekonomisk", "enorm", "ensam", "falskt", "fast",
@@ -89,7 +101,7 @@
             { ord: "bok", genus: "en" }, { ord: "bil", genus: "en" }, { ord: "flicka", genus: "en" },
             { ord: "skola", genus: "en" }, { ord: "vägg", genus: "en" }, { ord: "dörr", genus: "en" },
             { ord: "hus", genus: "ett" }, { ord: "bord", genus: "ett" }, { ord: "äpple", genus: "ett" },
-            { ord: "fönster", genus: "ett" }, { ord: "rum", genus: "ett" }, { ord: "husdjur", genus: "ett" }
+            { ord: "fönster", genus: "ett" }, { ord: "rum", genus: "ett" }
         ];
 
         // Fras-mallar för grupperna A, B, C
@@ -103,7 +115,14 @@
         let currentQuestion = 0;
         let score = 0;
         let questions = [];
-        let usedAdjektiv = new Set(); // För att undvika dubbletter
+        let usedAdjektiv = new Set();
+
+        // Starta quizen
+        function startQuiz() {
+            document.getElementById("start-btn").style.display = "none";
+            genereraFragor();
+            visaFraga();
+        }
 
         // Generera 20 unika frågor
         function genereraFragor() {
@@ -123,27 +142,24 @@
 
                 // Skapa frasen
                 let frasMall;
+                let correctAnswer;
+                let followUp = null;
+
                 if (grupp === "A") {
                     const artikel = subst.genus === "en" ? "en" : "ett";
-                    frasMall = fraser.A[subst.genus === "en" ? 0 : 1].replace("{adj}", adj).replace("{subst}", subst.ord);
-                } else if (grupp === "B") {
-                    const suffix = subst.genus === "en" ? "a" : "a"; // Förenklad böjning
-                    const substForm = subst.genus === "en" ?
-                        subst.ord + "n" : // en-bok → boken
-                        subst.ord + "t";   // ett-hus → huset
-                    frasMall = fraser.B[subst.genus === "en" ? 0 : subst.genus === "ett" ? 1 : 2]
-                        .replace("{adj}", adj + suffix)
-                        .replace("{subst}", substForm.replace("et", "").replace("en", "")); // Fixa bestämd form
-                } else { // Grupp C
-                    const suffix = "a"; // Förenklad böjning
-                    frasMall = fraser.C[Math.floor(Math.random() * fraser.C.length)]
-                        .replace("{adj}", adj + suffix)
+                    frasMall = fraser.A[subst.genus === "en" ? 0 : 1]
+                        .replace("{adj}", adj)
                         .replace("{subst}", subst.ord);
-                }
-
-                // Skapa uppföljningsfråga
-                let followUp = null;
-                if (grupp === "B") {
+                    correctAnswer = "A";
+                } else if (grupp === "B") {
+                    const suffix = "a"; // Förenklad böjning
+                    const substForm = subst.genus === "en" ?
+                        subst.ord + "n" : // en bok → boken
+                        subst.ord + "t";   // ett hus → huset
+                    const frasIndex = subst.genus === "en" ? 0 : subst.genus === "ett" ? 1 : 2;
+                    frasMall = fraser.B[fraseIndex]
+                        .replace("{adj}", adj + suffix)
+                        .replace("{subst}", substForm.replace("et", "").replace("en", ""));
+                    correctAnswer = "B";
                     followUp = {
-                        text: `Är "${subst.ord}" i "${frasMall}" bestämd eller obestämd form?`,
-                        options: ["
+                        text: `Är "${sub
