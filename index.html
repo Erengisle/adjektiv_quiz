@@ -1,204 +1,197 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Adjektivquiz</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        :root {
-            --primary: #4CAF50;
-            --secondary: #2196F3;
-            --error: #F44336;
-            --success: #8BC34A;
-            --light: #f5f5f5;
-            --dark: #333;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
-            background-color: var(--light);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 800px;
-            width: 95%;
-            margin: 20px auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 25px;
-        }
-
-        h1 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .score {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--secondary);
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .question-box {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .question {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            color: var(--dark);
-        }
-
-        .options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        button {
-            padding: 12px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-
-        .option-btn {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .option-btn:hover {
-            background-color: #45a049;
-        }
-
-        .group-a { background-color: #FF9800; }
-        .group-b { background-color: #2196F3; }
-        .group-c { background-color: #9C27B0; }
-
-        .option-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        #start-btn {
-            background-color: var(--secondary);
-            color: white;
-            font-size: 1.1rem;
-            padding: 15px 30px;
-            margin: 20px auto;
-            display: block;
-        }
-
-        #next-btn {
-            background-color: var(--secondary);
-            color: white;
-            display: none;
-        }
-
-        #result {
-            font-size: 1.1rem;
-            margin: 15px 0;
-            min-height: 24px;
-        }
-
-        .correct {
-            color: var(--success);
-            font-weight: bold;
-        }
-
-        .incorrect {
-            color: var(--error);
-            font-weight: bold;
-        }
-
-        .follow-up {
-            background-color: #E3F2FD;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .follow-up-options {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .follow-up-btn {
-            background-color: var(--secondary);
-            color: white;
-        }
-
-        @media (max-width: 600px) {
-            .options {
-                grid-template-columns: 1fr;
-            }
-
-            .follow-up-options {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Adjektivquiz</h1>
-        <div class="score">Poäng: 0</div>
-
-        <div class="question-box">
-            <div class="question" id="question">Klicka på "Starta quiz" för att börja!</div>
-            <div class="options" id="options">
-                <button id="start-btn" class="option-btn">Starta quiz</button>
-            </div>
-            <div id="result"></div>
-            <div class="follow-up" id="follow-up"></div>
-            <button id="next-btn" class="option-btn">Nästa fråga</button>
-        </div>
-    </div>
-
-    <script>
-        // Adjektivlista (renad och utökad)
-        const adjektiv = [
-            "allvarlig", "arg", "arbetslös", "aktuell", "avundsjuk", "belåten", "blank", "bra", "bred", "brun",
-            "bussig", "definitiv", "dov", "duktig", "dum", "ekonomisk", "enorm", "ensam", "falsk", "fast",
-            "farlig", "färdig", "färsk", "fin", "flott", "fri", "ful", "full", "galen", "gemensam", "god",
-            "grå", "gräslig", "grov", "gul", "hård", "halv", "het", "hög", "hemsk", "hoppfull", "intressant",
-            "jämn", "jättetuff", "kall", "kvinlig", "klar", "kort", "liten", "lång", "ledig", "ledsen",
-            "lätt", "liberal", "ljus", "lönsam", "lös", "lugn", "lycklig", "mjuk", "modern", "mogen",
-            "mörk", "måttlig", "naturvetenskaplig", "nöjd", "nödvändig", "ny", "personlig", "pigg",
-            "positiv", "politisk", "randig", "rädd", "rik", "riktig", "rymlig", "röd", "rutig", "säker",
-            "sen", "skön", "smal", "smutsig", "snäll", "snål", "snygg", "spärrad", "stark", "stor",
-            "sönder", "särskild", "söt", "svart", "svensk", "svår", "tjock", "tom", "trevlig", "treårig",
-            "trött", "tråkig", "tuff", "tunn", "underbar", "underlig", "usel", "utförlig", "vacker",
-            "vaken", "villig", "vit", "värdefull", "varm", "vacker", "vild", "våldsam", "vänlig"
-        ];
-
-        // Substantiv med genus (en/ett)
-        const substantiv = [
-            { ord: "bok", genus: "en" }, { ord: "bil", genus: "en" }, { ord: "flicka", genus: "en" },
-            { ord: "skola", genus: "en" }, { ord: "vägg", genus: "en" }, { ord: "dörr", genus: "en" },
-            { ord: "stad", genus: "en" }, { ord: "boll", genus: "en" }, { ord: "hund", genus: "en" },
-            { ord: "hus", genus: "ett" }, { ord: "bord", genus: "ett" }, { ord: "äpple", genus: "ett" },
-            { ord: "fönster", genus: "ett" }, { ord: "rum", genus: "ett" }, { ord: "husdjur
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/index.html b/index.html
+index 7b52531cb8f2b6f531aaaa6a856fcf1f9befd565..e68a76eea87adcb52fe679d4cb2e330bfde4c754 100644
+--- a/index.html
++++ b/index.html
+@@ -143,62 +143,178 @@
+             display: flex;
+             justify-content: center;
+             gap: 15px;
+             margin-top: 10px;
+         }
+ 
+         .follow-up-btn {
+             background-color: var(--secondary);
+             color: white;
+         }
+ 
+         @media (max-width: 600px) {
+             .options {
+                 grid-template-columns: 1fr;
+             }
+ 
+             .follow-up-options {
+                 flex-direction: column;
+             }
+         }
+     </style>
+ </head>
+ <body>
+     <div class="container">
+         <h1>Adjektivquiz</h1>
+-        <div class="score">Poäng: 0</div>
++        <div class="score">Poäng: <span id="score">0</span></div>
+ 
+         <div class="question-box">
+             <div class="question" id="question">Klicka på "Starta quiz" för att börja!</div>
+             <div class="options" id="options">
+                 <button id="start-btn" class="option-btn">Starta quiz</button>
+             </div>
+             <div id="result"></div>
+             <div class="follow-up" id="follow-up"></div>
+             <button id="next-btn" class="option-btn">Nästa fråga</button>
+         </div>
+     </div>
+ 
+     <script>
+-        // Adjektivlista (renad och utökad)
+         const adjektiv = [
+             "allvarlig", "arg", "arbetslös", "aktuell", "avundsjuk", "belåten", "blank", "bra", "bred", "brun",
+             "bussig", "definitiv", "dov", "duktig", "dum", "ekonomisk", "enorm", "ensam", "falsk", "fast",
+             "farlig", "färdig", "färsk", "fin", "flott", "fri", "ful", "full", "galen", "gemensam", "god",
+             "grå", "gräslig", "grov", "gul", "hård", "halv", "het", "hög", "hemsk", "hoppfull", "intressant",
+-            "jämn", "jättetuff", "kall", "kvinlig", "klar", "kort", "liten", "lång", "ledig", "ledsen",
++            "jämn", "jättetuff", "kall", "kvinnlig", "klar", "kort", "liten", "lång", "ledig", "ledsen",
+             "lätt", "liberal", "ljus", "lönsam", "lös", "lugn", "lycklig", "mjuk", "modern", "mogen",
+             "mörk", "måttlig", "naturvetenskaplig", "nöjd", "nödvändig", "ny", "personlig", "pigg",
+             "positiv", "politisk", "randig", "rädd", "rik", "riktig", "rymlig", "röd", "rutig", "säker",
+             "sen", "skön", "smal", "smutsig", "snäll", "snål", "snygg", "spärrad", "stark", "stor",
+             "sönder", "särskild", "söt", "svart", "svensk", "svår", "tjock", "tom", "trevlig", "treårig",
+             "trött", "tråkig", "tuff", "tunn", "underbar", "underlig", "usel", "utförlig", "vacker",
+-            "vaken", "villig", "vit", "värdefull", "varm", "vacker", "vild", "våldsam", "vänlig"
++            "vaken", "villig", "vit", "värdefull", "varm", "vild", "våldsam", "vänlig"
+         ];
+ 
+-        // Substantiv med genus (en/ett)
+         const substantiv = [
+-            { ord: "bok", genus: "en" }, { ord: "bil", genus: "en" }, { ord: "flicka", genus: "en" },
+-            { ord: "skola", genus: "en" }, { ord: "vägg", genus: "en" }, { ord: "dörr", genus: "en" },
+-            { ord: "stad", genus: "en" }, { ord: "boll", genus: "en" }, { ord: "hund", genus: "en" },
+-            { ord: "hus", genus: "ett" }, { ord: "bord", genus: "ett" }, { ord: "äpple", genus: "ett" },
+-            { ord: "fönster", genus: "ett" }, { ord: "rum", genus: "ett" }, { ord: "husdjur
++            { ord: "bok", genus: "en" },
++            { ord: "bil", genus: "en" },
++            { ord: "flicka", genus: "en" },
++            { ord: "skola", genus: "en" },
++            { ord: "vägg", genus: "en" },
++            { ord: "dörr", genus: "en" },
++            { ord: "stad", genus: "en" },
++            { ord: "boll", genus: "en" },
++            { ord: "hund", genus: "en" },
++            { ord: "katt", genus: "en" },
++            { ord: "sol", genus: "en" },
++            { ord: "stol", genus: "en" },
++            { ord: "hus", genus: "ett" },
++            { ord: "bord", genus: "ett" },
++            { ord: "äpple", genus: "ett" },
++            { ord: "fönster", genus: "ett" },
++            { ord: "rum", genus: "ett" },
++            { ord: "träd", genus: "ett" },
++            { ord: "barn", genus: "ett" },
++            { ord: "brev", genus: "ett" },
++            { ord: "ljus", genus: "ett" },
++            { ord: "problem", genus: "ett" }
++        ];
++
++        const questionEl = document.getElementById("question");
++        const optionsEl = document.getElementById("options");
++        const resultEl = document.getElementById("result");
++        const followUpEl = document.getElementById("follow-up");
++        const nextBtn = document.getElementById("next-btn");
++        const scoreEl = document.getElementById("score");
++
++        let currentQuestion = null;
++        let score = 0;
++
++        function randomItem(list) {
++            return list[Math.floor(Math.random() * list.length)];
++        }
++
++        function shuffle(arr) {
++            return [...arr].sort(() => Math.random() - 0.5);
++        }
++
++        function makeForms(adjektiv, genus) {
++            const stam = adjektiv.endsWith("t") ? adjektiv : adjektiv;
++            return {
++                en: adjektiv,
++                ett: stam.endsWith("t") ? stam : `${stam}t`,
++                plural: `${stam}a`,
++                bestämd: `${stam}a`
++            };
++        }
++
++        function createQuestion() {
++            const noun = randomItem(substantiv);
++            const adj = randomItem(adjektiv);
++            const forms = makeForms(adj, noun.genus);
++            const correct = noun.genus === "ett" ? forms.ett : forms.en;
++
++            const wrong = shuffle(adjektiv.filter(a => a !== correct)).slice(0, 2);
++            const options = shuffle([correct, ...wrong]);
++
++            return {
++                text: `Välj rätt form: ${noun.genus} ${noun.ord}`,
++                correct,
++                options,
++                explanation: `Rätt svar är "${correct}" eftersom "${noun.ord}" är ett ${noun.genus}-ord.`
++            };
++        }
++
++        function renderQuestion() {
++            currentQuestion = createQuestion();
++            questionEl.textContent = currentQuestion.text;
++            resultEl.textContent = "";
++            resultEl.className = "";
++            followUpEl.style.display = "none";
++            nextBtn.style.display = "none";
++
++            optionsEl.innerHTML = "";
++            currentQuestion.options.forEach((option, idx) => {
++                const btn = document.createElement("button");
++                btn.className = `option-btn group-${String.fromCharCode(97 + idx)}`;
++                btn.textContent = option;
++                btn.addEventListener("click", () => checkAnswer(option));
++                optionsEl.appendChild(btn);
++            });
++        }
++
++        function checkAnswer(selected) {
++            const correct = currentQuestion.correct;
++            const buttons = optionsEl.querySelectorAll("button");
++            buttons.forEach(btn => {
++                btn.disabled = true;
++                if (btn.textContent === correct) {
++                    btn.style.outline = "3px solid #8BC34A";
++                }
++            });
++
++            if (selected === correct) {
++                score += 1;
++                scoreEl.textContent = score;
++                resultEl.textContent = "Rätt!";
++                resultEl.className = "correct";
++            } else {
++                resultEl.textContent = "Fel svar.";
++                resultEl.className = "incorrect";
++            }
++
++            followUpEl.textContent = currentQuestion.explanation;
++            followUpEl.style.display = "block";
++            nextBtn.style.display = "inline-block";
++        }
++
++        function startQuiz() {
++            score = 0;
++            scoreEl.textContent = score;
++            renderQuestion();
++        }
++
++        document.getElementById("start-btn").addEventListener("click", startQuiz);
++        nextBtn.addEventListener("click", renderQuestion);
++    </script>
++</body>
++</html>
+ 
+EOF
+)
